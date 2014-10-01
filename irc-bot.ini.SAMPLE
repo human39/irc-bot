@@ -1,0 +1,9 @@
+[general]
+botname = bot
+
+channel = #bot
+
+server  = localhost
+
+insults = dummy
+insults = jerk face 
