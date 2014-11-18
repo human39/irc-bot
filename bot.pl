@@ -7,7 +7,7 @@ package Bot;
 use base qw( Bot::BasicBot );
 
 # Basic Config. 
-my $IMG_DIR  = "~/.tmp";
+my $IMG_DIR  = "/tmp/.bot";
 my $EXIF_KEYS = [qw( ImageSize FileSize MIMEType SecurityClassification OwnerName GPSLatitude GPSLongitude GPSAltitude GPSDateTime GPSProcessingMethod Copyright UserComment)]; 
 
 # Binaries
@@ -30,6 +30,7 @@ use Image::ExifTool ':Public';
 use Mojo::UserAgent;
 use URI::Encode qw(uri_encode);
 use Config::IniFiles;
+use Imager::SkinDetector;
 
 GetOptions(
     $OPT, 
@@ -231,6 +232,15 @@ sub _fetch_web_title {
                 } else {
                     return $self->error($message->{channel}, "No interesting EXIF data for [$uri]");
                 }
+
+                # NSFW probability
+                my $nsfw = Imager::SkinDetector->new(file => $file_to_save);
+
+                if ($nsfw) {
+                    my $prob = $nsfw->contains_nudity();
+                    $string_to_send .= sprintf ", NSFW probability [%.2f%%]", $prob * 100;
+                }
+
             } else {
                 return $self->error($message->{channel}, "Could not get EXIF data for [$uri]");
             }
